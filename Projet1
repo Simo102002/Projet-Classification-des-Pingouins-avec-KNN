@@ -1,0 +1,86 @@
+"""
+Projet : Classification des Pingouins avec KNN
+
+Ce projet vise à prédire l'espèce de pingouins (à partir du jeu de données "penguins.csv") 
+en se basant uniquement sur deux caractéristiques : la longueur et la profondeur du bec 
+(`bill_length_mm` et `bill_depth_mm`).
+
+**Description de l'exercice** :
+1. Charger les données et préparer les colonnes pertinentes (dimensions du bec et espèces).
+2. Diviser les données en deux ensembles : entraînement (80%) et test (20%).
+3. Construire un modèle de classification en utilisant l'algorithme des k plus proches voisins (KNN).
+4. Tester différentes valeurs de `K` pour optimiser la précision et conclure sur la meilleure configuration.
+
+**Pourquoi KNN ?**
+L'algorithme KNN (K-Nearest Neighbors) est un choix naturel pour ce type de problème car :
+- Il est intuitif et simple à implémenter.
+- Il fonctionne bien pour les jeux de données de taille réduite.
+- Il n'exige pas de présuppositions sur la distribution des données, ce qui le rend flexible.
+
+Dans ce projet, nous utilisons KNN pour classifier les pingouins et analyser comment le choix de `K` affecte les performances du modèle.
+"""  
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
+import matplotlib.pyplot as plt
+
+
+penguins = pd.read_csv(r"C:\\Users\\Admin\\Downloads\\TP_ML\\penguins.csv")
+
+features = ["bill_length_mm", "bill_depth_mm"]
+target = "species"
+# dropna() = Retirer les lignes avec des valeurs manquantes
+data = penguins[features +[target]].dropna()
+print(data.head())
+print(data.info())
+# =============================================================================
+#♦Ensuite on divise les données en deux ensembles :
+#80% pour l'entraînement.
+#20% pour le test.
+#pour ca on utilise la fonction train_test_split de Scikit-learn pour effectuer cette séparation.
+# =============================================================================
+x=data[features]
+y=data[target]
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42 )
+
+print("Taille de l'ensemble d'entraînement :", x_train.shape, y_train.shape)
+print("Taille de l'ensemble de test :", x_test.shape, y_test.shape)
+
+# =============================================================================
+# Construire un modèle KNN
+# on initialise un modèle KNN (K-Nearest Neighbors) avec un nombre de voisins par défaut (K=5).
+# on entraîne le modèle sur les données d'entraînement.
+# on prédis les valeurs sur l'ensemble de test et on calcule la précision.
+# =============================================================================
+
+k_default = 5
+knn = KNeighborsClassifier(n_neighbors=k_default)
+
+knn.fit(x_train, y_train)
+prediction = knn.predict(x_test)
+accuracy = accuracy_score(y_test, prediction)
+print(f"Précision du modèle avec K={k_default} : {accuracy:.2f}")
+
+# =============================================================================
+# on fait varier K et on observe les performances
+# on fait varier le nombre de voisins K de 1 à 20.
+# on calcul la précision pour chaque valeur de K.
+# on visualise les performances en traçant un graphique des précisions.
+# =============================================================================
+ 
+k_vals = range(1, 21)
+accuracy=[]
+for k in k_vals: 
+    knn = KNeighborsClassifier(n_neighbors=k)
+    knn.fit(x_train, y_train)
+    prediction= knn.predict(x_test)
+    accuracy.append(accuracy_score(y_test, prediction))
+
+plt.figure(figsize=(10, 6))
+plt.plot(k_vals, accuracy, marker='o')
+plt.title("Performances du modèle en fonction de K")
+plt.xlabel("Nombre de voisins (K)")
+plt.ylabel("Précision")
+plt.grid()
+plt.show()
